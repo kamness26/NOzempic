@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOzempic — Welcome to the League</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0a0a0a;
+    color: #f0f0f0;
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+    border-bottom: 3px solid #e63946;
+    padding: 40px 40px 32px;
+    text-align: center;
+  }
+  .header-eyebrow {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: #e63946;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .header-title {
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: 6px;
+    color: #fff;
+    line-height: 1;
+  }
+  .header-sub {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #777;
+    line-height: 1.6;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .header-sub strong { color: #ccc; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    background: #111;
+    border-bottom: 1px solid #1e1e1e;
+    padding: 14px 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: #1e1e1e;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #e63946;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-label {
+    font-size: 11px;
+    color: #555;
+    white-space: nowrap;
+    letter-spacing: 1px;
+  }
+
+  /* ── FORM WRAPPER ── */
+  .form-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  .section.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-header {
+    padding: 32px 0 24px;
+    border-bottom: 1px solid #1e1e1e;
+    margin-bottom: 28px;
+  }
+  .section-number {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #e63946;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .section-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .section-desc {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  /* ── FORM FIELDS ── */
+  .field-group {
+    margin-bottom: 24px;
+  }
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  label span { color: #e63946; }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  select,
+  textarea {
+    width: 100%;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 15px;
+    color: #f0f0f0;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: #e63946;
+    background: #161616;
+  }
+  input::placeholder, textarea::placeholder { color: #444; }
+  select option { background: #141414; }
+
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* ── RADIO / CHECKBOX CARDS ── */
+  .card-grid {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  .choice-card {
+    position: relative;
+  }
+  .choice-card input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .choice-card label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: #aaa;
+    line-height: 1.5;
+  }
+  .choice-card input:checked + label {
+    border-color: #e63946;
+    background: #1a0e0f;
+    color: #fff;
+  }
+  .choice-card label:hover { border-color: #444; color: #eee; }
+  .choice-icon { font-size: 20px; flex-shrink: 0; }
+  .choice-text { flex: 1; }
+  .choice-title { font-weight: 700; display: block; margin-bottom: 2px; color: inherit; }
+  .choice-desc { font-size: 11px; color: #666; font-weight: 400; }
+  .choice-card input:checked + label .choice-desc { color: #aaa; }
+
+  /* ── RANGE SLIDER ── */
+  .slider-wrap { margin-bottom: 24px; }
+  .slider-value-display {
+    text-align: center;
+    font-size: 36px;
+    font-weight: 900;
+    color: #e63946;
+    margin-bottom: 8px;
+    line-height: 1;
+  }
+  .slider-value-display span {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+    margin-left: 4px;
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #2a2a2a;
+    border-radius: 3px;
+    outline: none;
+    border: none;
+    padding: 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #e63946;
+    cursor: pointer;
+    border: 3px solid #0a0a0a;
+    box-shadow: 0 0 0 2px #e63946;
+  }
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #555;
+    margin-top: 6px;
+  }
+
+  /* ── CONSENT SECTION ── */
+  .consent-box {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .consent-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ccc;
+    margin-bottom: 12px;
+  }
+  .consent-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #777;
+    line-height: 1.5;
+  }
+  .consent-item:last-child { margin-bottom: 0; }
+  .consent-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #e63946;
+    margin-top: 7px;
+    flex-shrink: 0;
+  }
+
+  .consent-card {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .consent-card input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .consent-card label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 14px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #aaa;
+    text-transform: none;
+    letter-spacing: 0;
+    line-height: 1.5;
+    transition: all 0.15s;
+  }
+  .consent-card input:checked + label {
+    border-color: #22c55e;
+    background: #0a1a0e;
+    color: #fff;
+  }
+  .consent-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 2px solid #2a2a2a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .consent-card input:checked + label .consent-check {
+    background: #22c55e;
+    border-color: #22c55e;
+  }
+  .consent-card input:checked + label .consent-check::after {
+    content: '✓';
+    color: white;
+    font-weight: 700;
+  }
+
+  /* ── WHOOP STEPS ── */
+  .steps-list { margin-bottom: 24px; }
+  .step-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .step-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e63946;
+    color: white;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-body { flex: 1; padding-top: 4px; }
+  .step-title { font-size: 14px; font-weight: 700; color: #eee; margin-bottom: 4px; }
+  .step-desc { font-size: 13px; color: #666; line-height: 1.5; }
+  .step-desc a { color: #e63946; text-decoration: none; }
+  .step-desc code {
+    background: #1e1e1e;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #f4a416;
+  }
+
+  /* ── BUTTONS ── */
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 28px 0 0;
+    border-top: 1px solid #1e1e1e;
+    margin-top: 8px;
+  }
+  .btn-back {
+    padding: 14px 24px;
+    background: transparent;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    color: #666;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn-back:hover { border-color: #444; color: #aaa; }
+  .btn-next {
+    flex: 1;
+    padding: 16px 32px;
+    background: #e63946;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+  }
+  .btn-next:hover { background: #c1121f; }
+  .btn-next:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
+
+  /* ── SUCCESS SCREEN ── */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 60px 24px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .success-icon { font-size: 64px; margin-bottom: 24px; }
+  .success-title {
+    font-size: 32px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  .success-sub {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.7;
+  }
+  .success-sub strong { color: #e63946; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 480px) {
+    .header { padding: 28px 20px 24px; }
+    .header-title { font-size: 36px; }
+    .form-wrap { padding: 0 16px; }
+    .field-row { grid-template-columns: 1fr; }
+    .card-grid.cols-2, .card-grid.cols-3 { grid-template-columns: 1fr; }
+    .progress-wrap { padding: 14px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-eyebrow">⚡ Welcome to</div>
+  <div class="header-title">NOzempic</div>
+  <div class="header-sub">
+    Hey <strong>Nili</strong> — Kam sent you here because he wants to hold you accountable.<br>
+    This takes about 3 minutes. No wrong answers. Well, almost none.
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-label" id="progressLabel">Step 1 of 4</div>
+</div>
+
+<!-- FORM -->
+<div class="form-wrap">
+
+  <!-- ════════════════════════════════ -->
+  <!-- SECTION 1: BASICS               -->
+  <!-- ════════════════════════════════ -->
+  <div class="section active" id="section-1">
+    <div class="section-header">
+      <div class="section-number">Step 01 of 04</div>
+      <div class="section-title">Let's get the basics.</div>
+      <div class="section-desc">This info feeds directly into the scoring system and your weekly personal brief.</div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label>Your name <span>*</span></label>
+        <input type="text" id="name" value="Nili" placeholder="First name">
+      </div>
+      <div class="field-group">
+        <label>Age <span>*</span></label>
+        <input type="number" id="age" placeholder="e.g. 38" min="18" max="80">
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Height <span>*</span></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <input type="number" id="height_ft" placeholder="Feet (e.g. 5)" min="4" max="7">
+        </div>
+        <div>
+          <input type="number" id="height_in" placeholder="Inches (e.g. 8)" min="0" max="11">
+        </div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Gender <span>*</span></label>
+      <div class="card-grid cols-3">
+        <div class="choice-card">
+          <input type="radio" name="gender" id="gender_male" value="male">
+          <label for="gender_male">
+            <span class="choice-icon">♂</span>
+            <span class="choice-text"><span class="choice-title">Male</span></span>
+          </label>
+        </div>
+        <div class="choice-card">
+          <input type="radio" name="gender" id="gender_female" value="female">
+          <label for="gender_female">
+            <span class="choice-icon">♀</span>
+            <span class="choice-text"><span class="choice-title">Female</span></span>
+          </label>
+        </div>
+        <div class="choice-card">
+          <input type="radio" name="gender" id="gender_other" value="other">
+          <label for="gender_other">
+            <span class="choice-icon">◎</span>
+            <span class="choice-text"><span class="choice-title">Prefer not to say</span></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-next" onclick="nextSection(1)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════ -->
+  <!-- SECTION 2: GOALS                -->
+  <!-- ════════════════════════════════ -->
+  <div class="section" id="section-2">
+    <div class="section-header">
+      <div class="section-number">Step 02 of 04</div>
+      <div class="section-title">What are you actually here for?</div>
+      <div class="section-desc">Your personal brief will be tailored to these goals every week. Pick everything that applies.</div>
+    </div>
+
+    <div class="field-group">
+      <label>Primary goals <span>*</span> (select all that apply)</label>
+      <div class="card-grid cols-2">
+        <div class="choice-card">
+          <input type="checkbox" id="goal_weight" value="weight_loss">
+          <label for="goal_weight">
+            <span class="choice-icon">⚖️</span>
+            <span class="choice-text">
+              <span class="choice-title">Lose weight</span>
+              <span class="choice-desc">Reduce overall body weight</span>
+            </span>
+          </label>
+        </div>
+        <div class="choice-card">
+          <input type="checkbox" id="goal_fat" value="body_fat_reduction">
+          <label for="goal_fat">
+            <span class="choice-icon">🔥</span>
+            <span class="choice-text">
+              <span class="choice-title">Reduce body fat</span>
+              <span class="choice-desc">Lower body fat percentage</span>
+            </span>
+          </label>
+        </div>
+        <div class="choice-card">
+          <input type="checkbox" id="goal_muscle" value="muscle_gain">
+          <label for="goal_muscle">
+            <span class="choice-icon">💪</span>
+            <span class="choice-text">
+              <span class="choice-title">Build muscle</span>
+              <span class="choice-desc">Increase lean muscle mass</span>
+            </span>
+          </label>
+        </div>
+        <div class="choice-card">
+          <input type="checkbox" id="goal_endurance" value="endurance">
+          <label for="goal_endurance">
+            <span class="choice-icon">🏃</span>
+            <span class="choice-text">
+              <span class="choice-title">Endurance</span>
+              <span class="choice-desc">Improve cardio and stamina</span>
+            </span>
+          </label>
+        </div>
+        <div class="choice-card">
+          <input type="checkbox" id="goal_visceral" value="visceral_fat_reduction">
+          <label for="goal_visceral">
+            <span class="choice-icon">🫀</span>
+            <span class="choice-text">
+              <span class="choice-title">Visceral fat</span>
+              <span class="choice-desc">Target the deep health risk</span>
+            </span>
+          </label>
+        </div>
+        <div class="choice-card">
+          <input type="checkbox" id="goal_recomp" value="body_recomposition">
+          <label for="goal_recomp">
+            <span class="choice-icon">⚡</span>
+            <span class="choice-text">
+              <span class="choice-title">Recomposition</span>
+              <span class="choice-desc">Lose fat, gain muscle simultaneously</span>
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="slider-wrap">
+      <label>Approximate target weight <span>*</span></label>
+      <div class="slider-value-display">
+        <span id="targetWeightVal">175</span><span>lbs</span>
+      </div>
+      <input type="range" id="targetWeight" min="120" max="280" value="175" step="1"
+             oninput="document.getElementById('targetWeightVal').textContent = this.value">
+      <div class="slider-labels"><span>120 lbs</span><span>200 lbs</span><span>280 lbs</span></div>
+    </div>
+
+    <div class="field-group">
+      <label>Anything the coach should know? <span style="color:#555;">(optional)</span></label>
+      <textarea id="notes" placeholder="Injuries, medical conditions, past diets that worked or didn't, things you absolutely refuse to give up..."></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="prevSection(2)">← Back</button>
+      <button class="btn-next" onclick="nextSection(2)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════ -->
+  <!-- SECTION 3: WHOOP + SCAN DAY     -->
+  <!-- ════════════════════════════════ -->
+  <div class="section" id="section-3">
+    <div class="section-header">
+      <div class="section-number">Step 03 of 04</div>
+      <div class="section-title">Get your WHOOP connected.</div>
+      <div class="section-desc">This is a one-time setup. Once it's done, your activity data pulls automatically every week — you never have to touch it again.</div>
+    </div>
+
+    <div class="steps-list">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Make sure you have a WHOOP account</div>
+          <div class="step-desc">You need an active WHOOP subscription. If you're wearing the band, you're good.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">Tell Kam you're ready to connect</div>
+          <div class="step-desc">He'll run a quick setup script that sends you a WHOOP authorization link. You'll log in, tap Approve, and it's done. Takes about 60 seconds.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Your data pulls automatically from here</div>
+          <div class="step-desc">Every Thursday morning the system pulls your WHOOP recovery, strain, sleep, and HRV for the week. No app exports, no manual steps.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-title">Confirm your scan day</div>
+          <div class="step-desc">You'll come to Kam's place once a week for a Renpho body scan — takes 2 minutes. Which day works best?</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Preferred scan day <span>*</span></label>
+      <div class="card-grid cols-2">
+        <div class="choice-card">
+          <input type="radio" name="scan_day" id="scan_tue" value="Tuesday">
+          <label for="scan_tue">
+            <span class="choice-icon">📅</span>
+            <span class="choice-text"><span class="choice-title">Tuesday</span><span class="choice-desc">Gives the coach time before Thursday's email</span></span>
+          </label>
+        </div>
+        <div class="choice-card">
+          <input type="radio" name="scan_day" id="scan_wed" value="Wednesday">
+          <label for="scan_wed">
+            <span class="choice-icon">📅</span>
+            <span class="choice-text"><span class="choice-title">Wednesday</span><span class="choice-desc">Latest possible before Thursday dispatch</span></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="prevSection(3)">← Back</button>
+      <button class="btn-next" onclick="nextSection(3)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════ -->
+  <!-- SECTION 4: PRIVACY + CONFIRM    -->
+  <!-- ════════════════════════════════ -->
+  <div class="section" id="section-4">
+    <div class="section-header">
+      <div class="section-number">Step 04 of 04</div>
+      <div class="section-title">One last thing.</div>
+      <div class="section-desc">Quick confirmation of what's shared and what stays private. Read it — it matters.</div>
+    </div>
+
+    <div class="consent-box">
+      <div class="consent-title">What the group sees 👥</div>
+      <div class="consent-item"><div class="consent-dot"></div>Weekly score and rank (e.g. "Nili — 74 pts, #1")</div>
+      <div class="consent-item"><div class="consent-dot"></div>Weight change <em>delta</em> only (e.g. "−1.2 lbs") — never your actual weight</div>
+      <div class="consent-item"><div class="consent-dot"></div>Body fat % change (e.g. "−0.3%") — never your actual body fat %</div>
+      <div class="consent-item"><div class="consent-dot"></div>Activity score and HRV average from your WHOOP</div>
+    </div>
+
+    <div class="consent-box">
+      <div class="consent-title">What only you see 🔒</div>
+      <div class="consent-item"><div class="consent-dot"></div>Your absolute weight, body fat %, visceral fat, metabolic age</div>
+      <div class="consent-item"><div class="consent-dot"></div>Full Renpho body composition breakdown</div>
+      <div class="consent-item"><div class="consent-dot"></div>Personalized tips and coaching based on your specific data</div>
+      <div class="consent-item"><div class="consent-dot"></div>Your goals and progress trajectory</div>
+    </div>
+
+    <div class="field-group">
+      <label>I confirm that: <span>*</span></label>
+      <div class="consent-card">
+        <input type="checkbox" id="consent_data">
+        <label for="consent_data">
+          <div class="consent-check"></div>
+          I understand what data will be collected from my WHOOP and Renpho scans, and I'm okay with the deltas being shared with the group as described above.
+        </label>
+      </div>
+      <div class="consent-card">
+        <input type="checkbox" id="consent_commit">
+        <label for="consent_commit">
+          <div class="consent-check"></div>
+          I commit to showing up for the weekly scan and not rage-quitting when I lose.
+        </label>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="prevSection(4)">← Back</button>
+      <button class="btn-next" id="submitBtn" onclick="submitForm()" disabled>Submit & Join →</button>
+    </div>
+  </div>
+
+</div><!-- end form-wrap -->
+
+<!-- SUCCESS SCREEN -->
+<div class="success-screen" id="successScreen">
+  <div class="success-icon">🏆</div>
+  <div class="success-title">YOU'RE IN.</div>
+  <div class="success-sub">
+    Welcome to NOzempic, <strong id="successName">Nili</strong>.<br><br>
+    Kam will reach out about your WHOOP connection.<br>
+    Show up for the scan. Do the work.<br><br>
+    <strong>First dispatch drops Thursday.</strong><br>
+    Don't embarrass yourself.
+  </div>
+  <div style="margin-top:32px; padding:20px; background:#111; border-radius:12px; border:1px solid #1e1e1e; text-align:left;">
+    <div style="font-size:10px;letter-spacing:2px;color:#e63946;font-weight:700;text-transform:uppercase;margin-bottom:12px;">Your Summary</div>
+    <div id="summaryContent" style="font-size:13px;color:#888;line-height:2;"></div>
+  </div>
+</div>
+
+<script>
+  let currentSection = 1;
+  const totalSections = 4;
+
+  function updateProgress(section) {
+    const pct = ((section - 1) / totalSections) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = `Step ${section} of ${totalSections}`;
+  }
+
+  function showSection(n) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(`section-${n}`);
+    if (el) el.classList.add('active');
+    updateProgress(n);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function nextSection(from) {
+    if (from === 1) {
+      const name = document.getElementById('name').value.trim();
+      const age  = document.getElementById('age').value;
+      const ft   = document.getElementById('height_ft').value;
+      const gender = document.querySelector('input[name="gender"]:checked');
+      if (!name || !age || !ft || !gender) {
+        alert('Please fill in all required fields before continuing.');
+        return;
+      }
+    }
+    if (from === 2) {
+      const goals = document.querySelectorAll('input[type="checkbox"][id^="goal_"]:checked');
+      if (goals.length === 0) {
+        alert('Please select at least one goal.');
+        return;
+      }
+    }
+    if (from === 3) {
+      const scanDay = document.querySelector('input[name="scan_day"]:checked');
+      if (!scanDay) {
+        alert('Please select your preferred scan day.');
+        return;
+      }
+    }
+    currentSection = from + 1;
+    showSection(currentSection);
+  }
+
+  function prevSection(from) {
+    currentSection = from - 1;
+    showSection(currentSection);
+  }
+
+  // Enable submit only when both consent boxes are checked
+  document.addEventListener('change', function() {
+    const c1 = document.getElementById('consent_data')?.checked;
+    const c2 = document.getElementById('consent_commit')?.checked;
+    const btn = document.getElementById('submitBtn');
+    if (btn) btn.disabled = !(c1 && c2);
+  });
+
+  function submitForm() {
+    // Collect all data
+    const data = {
+      name:         document.getElementById('name').value.trim(),
+      age:          document.getElementById('age').value,
+      height_ft:    document.getElementById('height_ft').value,
+      height_in:    document.getElementById('height_in').value || '0',
+      gender:       document.querySelector('input[name="gender"]:checked')?.value,
+      goals:        [...document.querySelectorAll('input[type="checkbox"][id^="goal_"]:checked')].map(el => el.value),
+      target_weight: document.getElementById('targetWeight').value,
+      scan_day:     document.querySelector('input[name="scan_day"]:checked')?.value,
+      notes:        document.getElementById('notes').value.trim(),
+    };
+
+    // Height in total inches
+    const totalInches = parseInt(data.height_ft) * 12 + parseInt(data.height_in);
+
+    // Build mailto summary for Kam
+    const body = encodeURIComponent(
+      `NOzempic Onboarding — ${data.name}\n\n` +
+      `Name: ${data.name}\n` +
+      `Age: ${data.age}\n` +
+      `Height: ${data.height_ft}'${data.height_in}" (${totalInches} inches)\n` +
+      `Gender: ${data.gender}\n` +
+      `Goals: ${data.goals.join(', ')}\n` +
+      `Target weight: ${data.target_weight} lbs\n` +
+      `Preferred scan day: ${data.scan_day}\n` +
+      `Notes: ${data.notes || 'None'}\n\n` +
+      `config.json update:\n` +
+      `  "id": "nili",\n` +
+      `  "name": "${data.name}",\n` +
+      `  "age": ${data.age},\n` +
+      `  "height_in": ${totalInches},\n` +
+      `  "gender": "${data.gender}",\n` +
+      `  "goals": ${JSON.stringify(data.goals)},\n` +
+      `  "target_weight_lb": ${data.target_weight}\n`
+    );
+
+    // Show success screen
+    document.getElementById('successName').textContent = data.name;
+    document.getElementById('summaryContent').innerHTML =
+      `<b style="color:#ccc">Goals:</b> ${data.goals.map(g => g.replace(/_/g,' ')).join(', ')}<br>` +
+      `<b style="color:#ccc">Target weight:</b> ${data.target_weight} lbs<br>` +
+      `<b style="color:#ccc">Scan day:</b> ${data.scan_day}<br>` +
+      `<b style="color:#ccc">Height:</b> ${data.height_ft}'${data.height_in}"`;
+
+    document.querySelector('.form-wrap').style.display = 'none';
+    document.querySelector('.progress-wrap').style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
+
+    // Auto-open email to Kam with the filled-in data
+    setTimeout(() => {
+      window.location.href = `mailto:${encodeURIComponent('kamyar.a.hassid@gmail.com')}?subject=NOzempic%20Onboarding%20%E2%80%94%20${encodeURIComponent(data.name)}&body=${body}`;
+    }, 1200);
+  }
+
+  // Init
+  updateProgress(1);
+</script>
+</body>
+</html>

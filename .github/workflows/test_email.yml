@@ -1,0 +1,28 @@
+name: Test Email
+
+on:
+  workflow_dispatch:
+
+jobs:
+  send-test-email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Send test email
+        env:
+          ANTHROPIC_API_KEY:          ${{ secrets.ANTHROPIC_API_KEY }}
+          OURA_PERSONAL_ACCESS_TOKEN: ${{ secrets.OURA_PERSONAL_ACCESS_TOKEN }}
+          GMAIL_ADDRESS:              ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD:         ${{ secrets.GMAIL_APP_PASSWORD }}
+          ADMIN_EMAIL:                ${{ secrets.ADMIN_EMAIL }}
+        run: python test_email.py

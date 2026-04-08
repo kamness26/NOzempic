@@ -1,0 +1,50 @@
+name: "WHOOP Setup — Step 1: Generate Link for Nili"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-link:
+    name: Generate Authorization Link
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate WHOOP Auth Link
+        env:
+          WHOOP_CLIENT_ID: ${{ secrets.WHOOP_CLIENT_ID }}
+        run: |
+          python3 - <<'EOF'
+          import urllib.parse, os
+
+          client_id    = os.environ.get("WHOOP_CLIENT_ID", "")
+          redirect_uri = "https://kamness26.github.io/NOzempic/onboarding/whoop_callback.html"
+          scopes       = "offline read:profile read:recovery read:cycles read:sleep read:workout read:body_measurement"
+
+          if not client_id:
+              print("❌  WHOOP_CLIENT_ID secret is not set.")
+              print("    Add it at: github.com/kamness26/NOzempic/settings/secrets/actions")
+              exit(1)
+
+          params = urllib.parse.urlencode({
+              "response_type": "code",
+              "client_id":     client_id,
+              "redirect_uri":  redirect_uri,
+              "scope":         scopes,
+          })
+          link = f"https://api.prod.whoop.com/oauth/oauth2/auth?{params}"
+
+          print("")
+          print("=" * 60)
+          print("  ✅  WHOOP link generated!")
+          print("=" * 60)
+          print("")
+          print("  Send this link to Nili:")
+          print("")
+          print(f"  {link}")
+          print("")
+          print("  When Nili taps the link and approves,")
+          print("  he'll see a code on screen.")
+          print("")
+          print("  Once he sends you the code, run:")
+          print("  WHOOP Setup — Step 2: Exchange Code")
+          print("=" * 60)
+          EOF

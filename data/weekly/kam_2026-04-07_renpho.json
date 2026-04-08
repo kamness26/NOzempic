@@ -1,0 +1,22 @@
+{
+  "participant_id": "kam",
+  "scan_date": "2026-04-07",
+  "weight_lb": 253.4,
+  "body_fat_mass_lb": 88.4,
+  "body_fat_pct": 34.9,
+  "muscle_mass_lb": 153.8,
+  "skeletal_muscle_mass_lb": 95.0,
+  "bone_mass_lb": 11.0,
+  "protein_mass_lb": 33.0,
+  "body_water_mass_lb": 120.8,
+  "visceral_fat": 17,
+  "bmr_kcal": 1985,
+  "fat_free_mass_lb": 165.0,
+  "subcutaneous_fat_pct": 24.9,
+  "metabolic_age": 46,
+  "body_sore_score": 63,
+  "optimal_weight_lb": 166.0,
+  "bmi": 33.6,
+  "whr": 1.01,
+  "smi": 9.8
+}

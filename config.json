@@ -1,0 +1,52 @@
+{
+  "group_name": "NOzempic",
+  "week_number": 1,
+  "email_send_day": "Thursday",
+  "email_send_time": "09:00",
+  "scan_day": "Monday",
+
+  "participants": [
+    {
+      "id": "kam",
+      "name": "Kam",
+      "email": "kamyar.a.hassid@gmail.com",
+      "device": "oura",
+      "age": 42,
+      "height_in": 73,
+      "gender": "male",
+      "goals": ["weight_loss", "visceral_fat_reduction"],
+      "starting_weight_lb": 253.4,
+      "target_weight_lb": 220.0,
+      "ultimate_weight_lb": 166.0,
+      "has_renpho": true
+    },
+    {
+      "id": "nili",
+      "name": "Nili",
+      "email": "payamnili@yahoo.com",
+      "device": "whoop",
+      "age": 46,
+      "height_in": 68,
+      "gender": "male",
+      "goals": ["weight_loss", "body_fat_reduction"],
+      "starting_weight_lb": 219.8,
+      "target_weight_lb": 185.0,
+      "ultimate_weight_lb": 145.0,
+      "has_renpho": true
+    }
+  ],
+
+  "scoring_weights": {
+    "body_sore_score": 0.40,
+    "activity_score": 0.30,
+    "weekly_improvement": 0.30
+  },
+
+  "privacy": {
+    "share_absolute_weight": false,
+    "share_absolute_body_fat": false,
+    "share_deltas": true,
+    "share_activity_scores": true,
+    "share_hrv": true
+  }
+}

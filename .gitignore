@@ -1,0 +1,24 @@
+# Environment — NEVER commit
+.env
+.github_token
+push_log.txt
+push_to_github.sh
+PUSH TO GITHUB.command
+
+# Renpho scan PDFs — contain personal health data
+data/weekly/*.pdf
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# macOS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/

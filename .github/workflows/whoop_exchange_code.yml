@@ -1,0 +1,108 @@
+name: "WHOOP Setup — Step 2: Exchange Code & Save Tokens"
+
+on:
+  workflow_dispatch:
+    inputs:
+      auth_code:
+        description: "Paste the code Nili sent you"
+        required: true
+        type: string
+
+jobs:
+  exchange-and-save:
+    name: Exchange Code for Tokens
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Exchange auth code for tokens
+        id: exchange
+        env:
+          WHOOP_CLIENT_ID:     ${{ secrets.WHOOP_CLIENT_ID }}
+          WHOOP_CLIENT_SECRET: ${{ secrets.WHOOP_CLIENT_SECRET }}
+          AUTH_CODE:           ${{ inputs.auth_code }}
+        run: |
+          python3 - <<'EOF'
+          import os, json, sys
+          import urllib.request, urllib.parse
+
+          client_id     = os.environ["WHOOP_CLIENT_ID"]
+          client_secret = os.environ["WHOOP_CLIENT_SECRET"]
+          auth_code     = os.environ["AUTH_CODE"].strip()
+          redirect_uri  = "https://kamness26.github.io/NOzempic/onboarding/whoop_callback.html"
+          token_url     = "https://api.prod.whoop.com/oauth/oauth2/token"
+
+          import base64
+
+          print("🔄  Exchanging auth code for tokens...")
+
+          # WHOOP requires client credentials as Basic Auth header
+          credentials = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
+
+          payload = urllib.parse.urlencode({
+              "grant_type":   "authorization_code",
+              "code":         auth_code,
+              "redirect_uri": redirect_uri,
+          }).encode()
+
+          req = urllib.request.Request(token_url, data=payload, method="POST")
+          req.add_header("Content-Type", "application/x-www-form-urlencoded")
+          req.add_header("Authorization", f"Basic {credentials}")
+
+          try:
+              with urllib.request.urlopen(req, timeout=15) as resp:
+                  tokens = json.loads(resp.read())
+          except urllib.error.HTTPError as e:
+              body = e.read().decode()
+              print(f"❌  Token exchange failed: {e.code} {e.reason}")
+              print(f"    Response: {body}")
+              sys.exit(1)
+          except Exception as e:
+              print(f"❌  Token exchange failed: {e}")
+              sys.exit(1)
+
+          access  = tokens.get("access_token")
+          refresh = tokens.get("refresh_token")
+
+          if not access or not refresh:
+              print("❌  Unexpected response from WHOOP:")
+              print(json.dumps(tokens, indent=2))
+              sys.exit(1)
+
+          # Write to GitHub env for next step
+          with open(os.environ["GITHUB_ENV"], "a") as f:
+              f.write(f"WHOOP_ACCESS_TOKEN={access}\n")
+              f.write(f"WHOOP_REFRESH_TOKEN={refresh}\n")
+
+          print("✅  Tokens received!")
+          EOF
+
+      - name: Save tokens as GitHub Secrets
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo ""
+            echo "⚠️  GH_PAT secret not set — printing tokens for manual entry."
+            echo ""
+            echo "Add these two secrets at:"
+            echo "https://github.com/kamness26/NOzempic/settings/secrets/actions"
+            echo ""
+            echo "  Secret name:  WHOOP_ACCESS_TOKEN"
+            echo "  Secret value: $WHOOP_ACCESS_TOKEN"
+            echo ""
+            echo "  Secret name:  WHOOP_REFRESH_TOKEN"
+            echo "  Secret value: $WHOOP_REFRESH_TOKEN"
+            echo ""
+          else
+            echo "💾  Saving tokens as GitHub Secrets..."
+            gh secret set WHOOP_ACCESS_TOKEN  --body "$WHOOP_ACCESS_TOKEN"  --repo kamness26/NOzempic
+            gh secret set WHOOP_REFRESH_TOKEN --body "$WHOOP_REFRESH_TOKEN" --repo kamness26/NOzempic
+            echo ""
+            echo "✅  WHOOP_ACCESS_TOKEN saved!"
+            echo "✅  WHOOP_REFRESH_TOKEN saved!"
+            echo ""
+            echo "🎉  Nili is fully connected. The weekly workflow will now"
+            echo "    pull his real WHOOP data automatically."
+          fi

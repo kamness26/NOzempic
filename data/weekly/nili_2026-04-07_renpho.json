@@ -1,0 +1,22 @@
+{
+  "participant_id": "nili",
+  "scan_date": "2026-04-07",
+  "weight_lb": 219.8,
+  "body_fat_mass_lb": 70.4,
+  "body_fat_pct": 32.0,
+  "muscle_mass_lb": 139.4,
+  "skeletal_muscle_mass_lb": 85.4,
+  "bone_mass_lb": 10.0,
+  "protein_mass_lb": 29.8,
+  "body_water_mass_lb": 103.4,
+  "visceral_fat": 13,
+  "bmr_kcal": 1834,
+  "fat_free_mass_lb": 149.4,
+  "subcutaneous_fat_pct": 22.8,
+  "metabolic_age": 49,
+  "body_sore_score": 70,
+  "optimal_weight_lb": 145.0,
+  "bmi": 33.3,
+  "whr": 0.92,
+  "smi": 10.1
+}

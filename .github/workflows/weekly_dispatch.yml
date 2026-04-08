@@ -1,0 +1,49 @@
+# .github/workflows/weekly_dispatch.yml
+# ──────────────────────────────────────
+# Runs the NOzempic weekly email every Thursday at 9:00 AM ET.
+# All secrets live in GitHub → Settings → Secrets and variables → Actions.
+
+name: NOzempic Weekly Dispatch
+
+on:
+  schedule:
+    # Cron: min hour day month weekday (UTC)
+    # Thursday 9 AM ET = Thursday 14:00 UTC (EST) / 13:00 UTC (EDT)
+    - cron: "0 13 * * 4"
+
+  # Also allows manual trigger from the GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      week_override:
+        description: "Override week start date (YYYY-MM-DD)"
+        required: false
+
+jobs:
+  send-weekly-email:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run weekly dispatch
+        env:
+          ANTHROPIC_API_KEY:       ${{ secrets.ANTHROPIC_API_KEY }}
+          OURA_PERSONAL_ACCESS_TOKEN: ${{ secrets.OURA_PERSONAL_ACCESS_TOKEN }}
+          WHOOP_CLIENT_ID:         ${{ secrets.WHOOP_CLIENT_ID }}
+          WHOOP_CLIENT_SECRET:     ${{ secrets.WHOOP_CLIENT_SECRET }}
+          WHOOP_ACCESS_TOKEN:      ${{ secrets.WHOOP_ACCESS_TOKEN }}
+          WHOOP_REFRESH_TOKEN:     ${{ secrets.WHOOP_REFRESH_TOKEN }}
+          SENDGRID_API_KEY:        ${{ secrets.SENDGRID_API_KEY }}
+          PARTICIPANT_EMAILS:      ${{ secrets.PARTICIPANT_EMAILS }}
+          ADMIN_EMAIL:             ${{ secrets.ADMIN_EMAIL }}
+          WEEK_OVERRIDE:           ${{ github.event.inputs.week_override }}
+        run: python weekly_run.py

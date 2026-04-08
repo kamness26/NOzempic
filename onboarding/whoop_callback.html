@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NOzempic — WHOOP Connected</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 20px;
+      padding: 48px 40px;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+    }
+    .logo { font-size: 11px; letter-spacing: 4px; color: #e63946; font-weight: 700; margin-bottom: 12px; }
+    .icon { font-size: 64px; margin: 16px 0; }
+    h1 { font-size: 26px; font-weight: 800; margin-bottom: 12px; }
+    .subtitle { color: #888; font-size: 15px; line-height: 1.6; margin-bottom: 32px; }
+    .token-block {
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .token-label {
+      font-size: 10px; letter-spacing: 3px; color: #e63946;
+      font-weight: 700; margin-bottom: 8px;
+    }
+    .token-value {
+      background: #0a0a0a; border: 1px solid #333; border-radius: 8px;
+      padding: 12px 16px; font-family: monospace; font-size: 12px;
+      color: #ccc; word-break: break-all; line-height: 1.5;
+      margin-bottom: 10px; min-height: 48px;
+    }
+    .copy-btn {
+      background: #e63946; color: #fff; border: none; border-radius: 8px;
+      padding: 10px 20px; font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: background 0.15s; width: 100%;
+    }
+    .copy-btn:hover { background: #c1121f; }
+    .copy-btn.copied { background: #2a9d4e; }
+    .step {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 12px 0; border-bottom: 1px solid #222; text-align: left;
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      background: #e63946; color: #fff; font-size: 11px; font-weight: 800;
+      width: 24px; height: 24px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .step-text { font-size: 14px; color: #ccc; line-height: 1.5; }
+    .step-text strong { color: #fff; }
+    .step-text a { color: #e63946; }
+    .spinner {
+      border: 3px solid #333; border-top: 3px solid #e63946;
+      border-radius: 50%; width: 40px; height: 40px;
+      animation: spin 0.8s linear infinite; margin: 16px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-card { display: none; }
+    .loading-card { display: none; }
+    .success-card { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Loading state -->
+  <div class="card loading-card" id="loading-card">
+    <div class="logo">⚡ NOzempic</div>
+    <div class="spinner"></div>
+    <h1>Connecting WHOOP...</h1>
+    <p class="subtitle">Exchanging authorization code for tokens. This takes just a second.</p>
+  </div>
+
+  <!-- Success state -->
+  <div class="card success-card" id="success-card">
+    <div class="logo">⚡ NOzempic</div>
+    <div class="icon">✅</div>
+    <h1>Approved! One last step.</h1>
+    <p class="subtitle">Open Terminal, paste the command below, and hit Enter. It'll print your tokens.</p>
+
+    <div class="token-block">
+      <div class="token-label">PASTE THIS INTO TERMINAL</div>
+      <div class="token-value" id="curl-command" style="font-size:11px;">—</div>
+      <button class="copy-btn" onclick="copyToken('curl-command', this)">Copy Command</button>
+    </div>
+
+    <div class="token-block">
+      <div class="token-label">WHAT TO DO</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">Copy the command above</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">Open <strong>Terminal</strong> and paste it, hit Enter</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">Send the printed result to <strong>Kam</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <div class="card error-card" id="error-card">
+    <div class="logo">⚡ NOzempic</div>
+    <div class="icon">❌</div>
+    <h1>Something went wrong</h1>
+    <p class="subtitle" id="error-msg">An unexpected error occurred.</p>
+  </div>
+
+  <script>
+    var CLIENT_ID     = "bb68b94c-c130-41ae-a93a-75d1311d1b84";
+    var CLIENT_SECRET = "ce05b8cba6c9311e56ee8c52f707918b00a0a27de4baaed3fda043f52c294d7f";
+    var REDIRECT_URI  = "https://kamness26.github.io/NOzempic/onboarding/whoop_callback.html";
+
+    function show(id) {
+      ['loading-card','success-card','error-card'].forEach(function(c) {
+        document.getElementById(c).style.display = c === id ? 'block' : 'none';
+      });
+    }
+
+    function copyToken(id, btn) {
+      var val = document.getElementById(id).textContent;
+      navigator.clipboard.writeText(val).then(function() {
+        var orig = btn.textContent;
+        btn.textContent = '✅  Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() { btn.textContent = orig; btn.classList.remove('copied'); }, 2500);
+      });
+    }
+
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var code   = params.get('code');
+      var error  = params.get('error');
+
+      if (error) {
+        show('error-card');
+        document.getElementById('error-msg').textContent = 'WHOOP returned an error: ' + error + '. Please try the link again.';
+        return;
+      }
+      if (!code) {
+        show('error-card');
+        document.getElementById('error-msg').textContent = 'No authorization code found. Please try the link again.';
+        return;
+      }
+
+      // Build the pre-filled curl command — do NOT auto-exchange (avoids code being consumed before curl runs)
+      var cmd = 'curl -s -X POST "https://api.prod.whoop.com/oauth/oauth2/token"'
+              + ' -H "Content-Type: application/x-www-form-urlencoded"'
+              + ' -d "grant_type=authorization_code'
+              + '&code=' + code
+              + '&redirect_uri=' + encodeURIComponent(REDIRECT_URI)
+              + '&client_id=' + CLIENT_ID
+              + '&client_secret=' + CLIENT_SECRET + '"';
+
+      document.getElementById('curl-command').textContent = cmd;
+      show('success-card');
+    })();
+  </script>
+</body>
+</html>
