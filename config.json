@@ -37,9 +37,9 @@
   ],
 
   "scoring_weights": {
-    "body_sore_score": 0.40,
-    "activity_score": 0.30,
-    "weekly_improvement": 0.30
+    "activity_score": 0.40,
+    "weekly_improvement": 0.30,
+    "body_sore_score": 0.30
   },
 
   "privacy": {
