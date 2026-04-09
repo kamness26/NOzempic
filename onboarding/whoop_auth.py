@@ -8,17 +8,20 @@ Usage:
     python onboarding/whoop_auth.py
 
 What it does:
-    1. Opens WHOOP's authorization page in the browser
-    2. You (or Marcus) log in and approve access
-    3. WHOOP redirects to localhost:8080 with an auth code
-    4. This script exchanges the code for access + refresh tokens
-    5. Tokens are written to .env automatically
+    1. Prints the WHOOP authorization URL
+    2. Starts a local server to catch the callback automatically (if the
+       browser is on this machine), OR lets you paste the redirect URL
+       manually (if Nili authorizes on her own device).
+    3. Exchanges the auth code for access + refresh tokens
+    4. Saves tokens to .env AND updates GitHub Secrets (requires GH_PAT)
 
 WHOOP developer docs: https://developer.whoop.com/docs/developing/authorization
 """
 
 import os
+import base64
 import json
+import subprocess
 import threading
 import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -63,15 +66,29 @@ class CallbackHandler(BaseHTTPRequestHandler):
         pass  # suppress server logs
 
 
+def extract_code_from_url(redirect_url: str) -> str | None:
+    """Extract the 'code' query param from a redirect URL."""
+    try:
+        parsed = urlparse(redirect_url.strip())
+        params = parse_qs(parsed.query)
+        return params.get("code", [None])[0]
+    except Exception:
+        return None
+
+
 def exchange_code_for_tokens(code: str) -> dict:
+    """Exchange authorization code for access + refresh tokens."""
+    credentials = base64.b64encode(f"{CLIENT_ID}:{CLIENT_SECRET}".encode()).decode()
     resp = requests.post(
         TOKEN_URL,
         data={
-            "grant_type":    "authorization_code",
-            "code":          code,
-            "redirect_uri":  REDIRECT_URI,
-            "client_id":     CLIENT_ID,
-            "client_secret": CLIENT_SECRET,
+            "grant_type":   "authorization_code",
+            "code":         code,
+            "redirect_uri": REDIRECT_URI,
+        },
+        headers={
+            "Content-Type":  "application/x-www-form-urlencoded",
+            "Authorization": f"Basic {credentials}",
         },
         timeout=10,
     )
@@ -79,10 +96,32 @@ def exchange_code_for_tokens(code: str) -> dict:
     return resp.json()
 
 
-def save_tokens(tokens: dict):
+def save_tokens_to_env(tokens: dict):
     set_key(ENV_FILE, "WHOOP_ACCESS_TOKEN",  tokens["access_token"])
     set_key(ENV_FILE, "WHOOP_REFRESH_TOKEN", tokens["refresh_token"])
     print("✅  Tokens saved to .env")
+
+
+def save_tokens_to_github(tokens: dict):
+    """Push fresh tokens to GitHub Secrets so the next workflow run is ready."""
+    gh_pat = os.getenv("GH_PAT")
+    if not gh_pat:
+        print("⚠️   GH_PAT not set — skipping GitHub Secrets update.")
+        print("    Add GH_PAT to your .env or environment to auto-update secrets.")
+        return
+
+    env = {**os.environ, "GH_TOKEN": gh_pat}
+    for name, value in [("WHOOP_ACCESS_TOKEN",  tokens["access_token"]),
+                         ("WHOOP_REFRESH_TOKEN", tokens["refresh_token"])]:
+        result = subprocess.run(
+            ["gh", "secret", "set", name, "--body", value,
+             "--repo", "kamness26/NOzempic"],
+            env=env, capture_output=True, text=True
+        )
+        if result.returncode == 0:
+            print(f"  🔑  {name} updated in GitHub Secrets")
+        else:
+            print(f"  ⚠️   Could not update {name}: {result.stderr.strip()}")
 
 
 def main():
@@ -99,26 +138,61 @@ def main():
     })
     auth_link = f"{AUTH_URL}?{params}"
 
-    # Start local callback server
+    # Start local callback server (catches the redirect if browser is on this machine)
     server = HTTPServer(("localhost", 8080), CallbackHandler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
 
-    print("\n🔐  Opening WHOOP authorization in your browser...")
-    print(f"    If it doesn't open, visit:\n    {auth_link}\n")
-    webbrowser.open(auth_link)
+    print("\n🔐  WHOOP Re-Authorization")
+    print("=" * 60)
+    print("\nStep 1 — Share this link with Nili (or open it yourself):\n")
+    print(f"  {auth_link}\n")
+    print("Step 2 — Nili clicks the link, logs into WHOOP, and approves access.")
+    print("\nStep 3 — One of two things will happen:")
+    print("  A) If the browser is on THIS machine: authorization completes automatically.")
+    print("  B) If Nili is on a different device: her browser will show a")
+    print('     "can\'t connect" page. She should copy the full URL from her')
+    print("     address bar and send it to you.\n")
+    print("Waiting 120 seconds for automatic callback... (press Enter to skip to manual paste)\n")
 
-    auth_code_received.wait(timeout=120)
+    # Wait up to 120s for automatic callback, or let user interrupt early
+    import select, sys
+    interrupted = False
+    try:
+        # Use select on stdin so we can wait for either callback or Enter key
+        ready, _, _ = select.select([sys.stdin], [], [], 120)
+        if ready:
+            sys.stdin.readline()  # consume the Enter
+            interrupted = True
+    except Exception:
+        pass  # select not available on Windows
+
     server.shutdown()
 
-    if not received_code:
-        print("❌  No authorization code received. Did you approve access in WHOOP?")
+    if received_code and not interrupted:
+        print("✅  Authorization code captured automatically.")
+        code = received_code
+    else:
+        print("\nPaste the full redirect URL from Nili's browser address bar")
+        print("(it will start with http://localhost:8080/whoop/callback?code=...)\n")
+        pasted = input("Redirect URL: ").strip()
+        code = extract_code_from_url(pasted)
+        if not code:
+            print("❌  Could not extract code from that URL. Please try again.")
+            return
+
+    print("\n🔄  Exchanging code for tokens...")
+    try:
+        tokens = exchange_code_for_tokens(code)
+    except Exception as e:
+        print(f"❌  Token exchange failed: {e}")
         return
 
-    print("🔄  Exchanging code for tokens...")
-    tokens = exchange_code_for_tokens(received_code)
-    save_tokens(tokens)
-    print("\n✅  WHOOP authorization complete! Marcus is connected.")
+    save_tokens_to_env(tokens)
+    save_tokens_to_github(tokens)
+
+    print("\n✅  WHOOP re-authorization complete! Nili is connected.")
+    print("    Next scheduled run will use the fresh tokens.")
 
 
 if __name__ == "__main__":
