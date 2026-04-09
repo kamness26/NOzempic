@@ -50,13 +50,18 @@ def save_config(config: dict):
 
 
 def get_week_range(override: str = None) -> tuple[date, date]:
-    """Return (monday, sunday) for the week to process."""
+    """Return (thursday, wednesday) — the 7-day window ending yesterday.
+
+    Emails fire on Thursday. The window covers the previous Thursday
+    through yesterday (Wednesday), giving a clean 7-day period of data.
+    Example: email on Apr 9 → window is Apr 2 → Apr 8.
+    """
     if override:
-        monday = datetime.strptime(override, "%Y-%m-%d").date()
+        week_start = datetime.strptime(override, "%Y-%m-%d").date()
     else:
-        today  = date.today()
-        monday = today - timedelta(days=today.weekday() + 7)
-    return monday, monday + timedelta(days=6)
+        today      = date.today()
+        week_start = today - timedelta(days=7)   # last Thursday
+    return week_start, week_start + timedelta(days=6)   # → Wednesday
 
 
 def find_renpho_pdf(participant_id: str, week_start: date) -> str | None:
@@ -70,6 +75,22 @@ def find_renpho_pdf(participant_id: str, week_start: date) -> str | None:
         matches = sorted(glob.glob(str(pattern)), reverse=True)
         if matches:
             return matches[0]
+    return None
+
+
+def find_renpho_json(participant_id: str) -> dict | None:
+    """
+    Fall back to the most recent JSON cache for a participant when no PDF
+    is available. Looks for any file matching {participant_id}_*_renpho.json
+    and returns the parsed contents of the most recently dated one.
+    """
+    matches = sorted(
+        glob.glob(str(DATA_DIR / f"{participant_id}_*_renpho.json")),
+        reverse=True,
+    )
+    if matches:
+        with open(matches[0]) as f:
+            return json.load(f)
     return None
 
 
@@ -100,10 +121,10 @@ def run():
     week_num   = config.get("week_number", 1)
     participants = config["participants"]
 
-    # Week date range
+    # Week date range (last Thursday → yesterday Wednesday)
     override   = os.getenv("WEEK_OVERRIDE")
-    monday, sunday = get_week_range(override)
-    print(f"📅 Processing week {week_num}: {monday} → {sunday}\n")
+    week_start, week_end = get_week_range(override)
+    print(f"📅 Processing week {week_num}: {week_start} → {week_end}\n")
 
     # ── Step 1: Pull activity data ────────────────────────────────────────────
     print("📡 Fetching activity data...")
@@ -117,11 +138,11 @@ def run():
         try:
             if device == "oura":
                 from connectors.oura import fetch_weekly_data
-                all_activity[pid] = fetch_weekly_data(str(monday), str(sunday))
+                all_activity[pid] = fetch_weekly_data(str(week_start), str(week_end))
 
             elif device == "whoop":
                 from connectors.whoop import fetch_weekly_data
-                all_activity[pid] = fetch_weekly_data(monday, sunday)
+                all_activity[pid] = fetch_weekly_data(week_start, week_end)
 
             print(f"     ✅ composite score: {all_activity[pid]['weekly_averages'].get('composite_activity_score')}")
 
@@ -142,19 +163,24 @@ def run():
     for p in participants:
         pid = p["id"]
 
-        # Current week
-        pdf_path = find_renpho_pdf(pid, monday)
+        # Current week — try PDF first, then fall back to most recent JSON cache
+        pdf_path = find_renpho_pdf(pid, week_start)
         if pdf_path:
             from connectors.renpho import parse_pdf
             all_renpho_current[pid] = parse_pdf(pdf_path, participant_id=pid)
-            save_renpho_cache(pid, monday, all_renpho_current[pid])
+            save_renpho_cache(pid, week_start, all_renpho_current[pid])
             print(f"  ✅ {p['name']}: {Path(pdf_path).name}")
         else:
-            print(f"  ⚠️  No Renpho PDF found for {p['name']} — using empty scan")
-            all_renpho_current[pid] = {"participant_id": pid, "body_sore_score": 50}
+            cached = find_renpho_json(pid)
+            if cached:
+                all_renpho_current[pid] = cached
+                print(f"  📂 {p['name']}: no PDF — using cached scan from {cached.get('scan_date', 'unknown date')}")
+            else:
+                print(f"  ⚠️  No Renpho data found for {p['name']} — using neutral defaults")
+                all_renpho_current[pid] = {"participant_id": pid, "body_sore_score": 50}
 
         # Previous week (for deltas)
-        all_renpho_previous[pid] = load_previous_renpho(pid, monday)
+        all_renpho_previous[pid] = load_previous_renpho(pid, week_start)
         if all_renpho_previous[pid]:
             print(f"     📈 Previous scan loaded for delta calculation")
 
@@ -201,7 +227,7 @@ def run():
 
         # Combine into full HTML email
         full_html = _build_full_email(segment1, seg2, ranked, all_activity, p,
-                                      all_renpho_current[pid], week_num, monday)
+                                      all_renpho_current[pid], week_num, week_start)
         participant_emails[pid] = full_html
 
     # ── Step 5: Send emails ───────────────────────────────────────────────────
