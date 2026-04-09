@@ -27,28 +27,67 @@ def _get_headers() -> dict:
 
 
 def _refresh_tokens():
-    """Exchange refresh token for a new access token and update .env."""
+    """Exchange refresh token for a new access token.
+
+    Uses HTTP Basic Auth (matching the initial token exchange) — WHOOP
+    rejects client credentials sent as form fields on the token endpoint.
+
+    After a successful refresh, attempts to persist the new tokens back to
+    GitHub Secrets via gh CLI so future runs don't re-hit 401.
+    Requires GH_PAT secret with repo secrets:write permission.
+    """
+    import base64
+    import subprocess
+
     refresh = os.getenv("WHOOP_REFRESH_TOKEN")
     if not refresh:
         raise RuntimeError("No WHOOP_REFRESH_TOKEN found. Run onboarding/whoop_auth.py first.")
+
+    credentials = base64.b64encode(f"{CLIENT_ID}:{CLIENT_SECRET}".encode()).decode()
 
     resp = requests.post(
         TOKEN_URL,
         data={
             "grant_type":    "refresh_token",
             "refresh_token": refresh,
-            "client_id":     CLIENT_ID,
-            "client_secret": CLIENT_SECRET,
         },
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        headers={
+            "Content-Type":  "application/x-www-form-urlencoded",
+            "Authorization": f"Basic {credentials}",
+        },
         timeout=10,
     )
     resp.raise_for_status()
     tokens = resp.json()
-    set_key(ENV_FILE, "WHOOP_ACCESS_TOKEN",  tokens["access_token"])
-    set_key(ENV_FILE, "WHOOP_REFRESH_TOKEN", tokens["refresh_token"])
-    os.environ["WHOOP_ACCESS_TOKEN"]  = tokens["access_token"]
-    os.environ["WHOOP_REFRESH_TOKEN"] = tokens["refresh_token"]
+
+    new_access  = tokens["access_token"]
+    new_refresh = tokens["refresh_token"]
+
+    # Update current process so this run succeeds immediately
+    os.environ["WHOOP_ACCESS_TOKEN"]  = new_access
+    os.environ["WHOOP_REFRESH_TOKEN"] = new_refresh
+
+    # Persist to GitHub Secrets so next week's run starts with valid tokens
+    gh_pat = os.getenv("GH_PAT")
+    if gh_pat:
+        env = {**os.environ, "GH_TOKEN": gh_pat}
+        for name, value in [("WHOOP_ACCESS_TOKEN", new_access),
+                             ("WHOOP_REFRESH_TOKEN", new_refresh)]:
+            result = subprocess.run(
+                ["gh", "secret", "set", name, "--body", value,
+                 "--repo", "kamness26/NOzempic"],
+                env=env, capture_output=True, text=True
+            )
+            if result.returncode == 0:
+                print(f"  🔑 {name} refreshed and saved to GitHub Secrets")
+            else:
+                print(f"  ⚠️  Could not save {name}: {result.stderr.strip()}")
+    else:
+        print("  ⚠️  GH_PAT not set — tokens refreshed for this run only. Add GH_PAT secret to persist.")
+
+    # Also write to local .env if present (for local dev)
+    set_key(ENV_FILE, "WHOOP_ACCESS_TOKEN",  new_access)
+    set_key(ENV_FILE, "WHOOP_REFRESH_TOKEN", new_refresh)
 
 
 def _get(endpoint: str, params: dict = None) -> dict:
