@@ -29,29 +29,31 @@ def _get_headers() -> dict:
 def _refresh_tokens():
     """Exchange refresh token for a new access token.
 
-    WHOOP app is configured for client_secret_post — credentials must be
-    sent as form fields, not Basic Auth header.
+    Uses HTTP Basic Auth (matching the initial token exchange) — WHOOP
+    rejects client credentials sent as form fields on the token endpoint.
 
     After a successful refresh, attempts to persist the new tokens back to
     GitHub Secrets via gh CLI so future runs don't re-hit 401.
     Requires GH_PAT secret with repo secrets:write permission.
     """
+    import base64
     import subprocess
 
     refresh = os.getenv("WHOOP_REFRESH_TOKEN")
     if not refresh:
         raise RuntimeError("No WHOOP_REFRESH_TOKEN found. Run onboarding/whoop_auth.py first.")
 
+    credentials = base64.b64encode(f"{CLIENT_ID}:{CLIENT_SECRET}".encode()).decode()
+
     resp = requests.post(
         TOKEN_URL,
         data={
             "grant_type":    "refresh_token",
             "refresh_token": refresh,
-            "client_id":     CLIENT_ID,
-            "client_secret": CLIENT_SECRET,
         },
         headers={
-            "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Type":  "application/x-www-form-urlencoded",
+            "Authorization": f"Basic {credentials}",
         },
         timeout=10,
     )
