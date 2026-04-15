@@ -47,4 +47,5 @@ jobs:
           PARTICIPANT_EMAILS:      ${{ secrets.PARTICIPANT_EMAILS }}
           ADMIN_EMAIL:             ${{ secrets.ADMIN_EMAIL }}
           WEEK_OVERRIDE:           ${{ github.event.inputs.week_override }}
+          GH_PAT:                  ${{ secrets.GH_PAT }}
         run: python weekly_run.py
