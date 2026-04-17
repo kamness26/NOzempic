@@ -38,7 +38,7 @@ jobs:
         env:
           ANTHROPIC_API_KEY:       ${{ secrets.ANTHROPIC_API_KEY }}
           OURA_PERSONAL_ACCESS_TOKEN: ${{ secrets.OURA_PERSONAL_ACCESS_TOKEN }}
-          WHOOP_CLIENT_ID:         ${{ secrets.WHOOP_CLIENT_ID }}
+          WHOOP_CLIENT_ID:         ${{ vars.WHOOP_CLIENT_ID }}
           WHOOP_CLIENT_SECRET:     ${{ secrets.WHOOP_CLIENT_SECRET }}
           WHOOP_ACCESS_TOKEN:      ${{ secrets.WHOOP_ACCESS_TOKEN }}
           WHOOP_REFRESH_TOKEN:     ${{ secrets.WHOOP_REFRESH_TOKEN }}

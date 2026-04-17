@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Generate WHOOP Auth Link
         env:
-          WHOOP_CLIENT_ID: ${{ secrets.WHOOP_CLIENT_ID }}
+          WHOOP_CLIENT_ID: ${{ vars.WHOOP_CLIENT_ID }}
         run: |
           python3 - <<'EOF'
           import urllib.parse, os

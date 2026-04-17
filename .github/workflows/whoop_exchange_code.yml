@@ -19,7 +19,7 @@ jobs:
       - name: Exchange auth code for tokens
         id: exchange
         env:
-          WHOOP_CLIENT_ID:     ${{ secrets.WHOOP_CLIENT_ID }}
+          WHOOP_CLIENT_ID:     ${{ vars.WHOOP_CLIENT_ID }}
           WHOOP_CLIENT_SECRET: ${{ secrets.WHOOP_CLIENT_SECRET }}
           AUTH_CODE:           ${{ inputs.auth_code }}
         run: |
