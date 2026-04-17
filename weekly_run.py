@@ -148,12 +148,16 @@ def run():
 
         except Exception as e:
             print(f"     ❌ Failed: {e}")
-            # Use neutral fallback so scoring can still proceed
-            all_activity[pid] = {
-                "device": device,
-                "weekly_averages": {"composite_activity_score": 50},
-                "daily": [],
-            }
+            admin_email = os.getenv("ADMIN_EMAIL")
+            if admin_email:
+                from mailer.sender import send_weekly_email
+                send_weekly_email(
+                    admin_email, "Admin",
+                    f"NOzempic: {device.upper()} fetch failed for {p['name']}",
+                    f"<p>Data fetch failed for <strong>{p['name']}</strong> ({device.upper()}):</p><pre>{e}</pre>",
+                    week_num,
+                )
+            raise
 
     # ── Step 2: Load Renpho scans ─────────────────────────────────────────────
     print("\n📊 Loading Renpho scans...")
