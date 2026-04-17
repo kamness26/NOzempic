@@ -81,9 +81,14 @@ def _refresh_tokens():
             if result.returncode == 0:
                 print(f"  🔑 {name} refreshed and saved to GitHub Secrets")
             else:
-                print(f"  ⚠️  Could not save {name}: {result.stderr.strip()}")
+                raise RuntimeError(
+                    f"Failed to persist {name} to GitHub Secrets: {result.stderr.strip()}"
+                )
     else:
-        print("  ⚠️  GH_PAT not set — tokens refreshed for this run only. Add GH_PAT secret to persist.")
+        raise RuntimeError(
+            "GH_PAT not set — cannot persist refreshed WHOOP tokens. "
+            "Add GH_PAT secret with repo:secrets:write permission to the repository."
+        )
 
     # Also write to local .env if present (for local dev)
     set_key(ENV_FILE, "WHOOP_ACCESS_TOKEN",  new_access)
@@ -130,9 +135,8 @@ def _to_iso(d: date) -> str:
 
 def get_week_dates() -> tuple[date, date]:
     today = date.today()
-    monday = today - timedelta(days=today.weekday() + 7)
-    sunday = monday + timedelta(days=6)
-    return monday, sunday
+    start = today - timedelta(days=7)
+    return start, start + timedelta(days=6)
 
 
 def fetch_weekly_data(start: date = None, end: date = None) -> dict:

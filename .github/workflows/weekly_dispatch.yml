@@ -8,7 +8,7 @@ name: NOzempic Weekly Dispatch
 on:
   schedule:
     # Cron: min hour day month weekday (UTC)
-    # Thursday 9 AM ET = Thursday 14:00 UTC (EST) / 13:00 UTC (EDT)
+    # 13:00 UTC = 9 AM EDT (Mar–Nov) / 8 AM EST (Nov–Mar)
     - cron: "0 13 * * 4"
 
   # Also allows manual trigger from the GitHub Actions tab
