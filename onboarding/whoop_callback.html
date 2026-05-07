@@ -81,40 +81,32 @@
 </head>
 <body>
 
-  <!-- Loading state -->
-  <div class="card loading-card" id="loading-card">
-    <div class="logo">⚡ NOzempic</div>
-    <div class="spinner"></div>
-    <h1>Connecting WHOOP...</h1>
-    <p class="subtitle">Exchanging authorization code for tokens. This takes just a second.</p>
-  </div>
-
   <!-- Success state -->
   <div class="card success-card" id="success-card">
     <div class="logo">⚡ NOzempic</div>
     <div class="icon">✅</div>
-    <h1>Approved! One last step.</h1>
-    <p class="subtitle">Open Terminal, paste the command below, and hit Enter. It'll print your tokens.</p>
+    <h1>Almost there! Send this code to Kam.</h1>
+    <p class="subtitle">Copy the code below and send it to Kam. He'll use it to finish connecting your WHOOP.</p>
 
     <div class="token-block">
-      <div class="token-label">PASTE THIS INTO TERMINAL</div>
-      <div class="token-value" id="curl-command" style="font-size:11px;">—</div>
-      <button class="copy-btn" onclick="copyToken('curl-command', this)">Copy Command</button>
+      <div class="token-label">YOUR AUTHORIZATION CODE</div>
+      <div class="token-value" id="auth-code">—</div>
+      <button class="copy-btn" onclick="copyToken('auth-code', this)">Copy Code</button>
     </div>
 
     <div class="token-block">
       <div class="token-label">WHAT TO DO</div>
       <div class="step">
         <div class="step-num">1</div>
-        <div class="step-text">Copy the command above</div>
+        <div class="step-text">Tap <strong>Copy Code</strong> above</div>
       </div>
       <div class="step">
         <div class="step-num">2</div>
-        <div class="step-text">Open <strong>Terminal</strong> and paste it, hit Enter</div>
+        <div class="step-text">Send it to <strong>Kam</strong> via text or iMessage</div>
       </div>
       <div class="step">
         <div class="step-num">3</div>
-        <div class="step-text">Send the printed result to <strong>Kam</strong></div>
+        <div class="step-text">That's it — Kam does the rest!</div>
       </div>
     </div>
   </div>
@@ -128,12 +120,8 @@
   </div>
 
   <script>
-    var CLIENT_ID     = "bb68b94c-c130-41ae-a93a-75d1311d1b84";
-    var CLIENT_SECRET = "ce05b8cba6c9311e56ee8c52f707918b00a0a27de4baaed3fda043f52c294d7f";
-    var REDIRECT_URI  = "https://kamness26.github.io/NOzempic/onboarding/whoop_callback.html";
-
     function show(id) {
-      ['loading-card','success-card','error-card'].forEach(function(c) {
+      ['success-card','error-card'].forEach(function(c) {
         document.getElementById(c).style.display = c === id ? 'block' : 'none';
       });
     }
@@ -164,16 +152,7 @@
         return;
       }
 
-      // Build the pre-filled curl command — do NOT auto-exchange (avoids code being consumed before curl runs)
-      var cmd = 'curl -s -X POST "https://api.prod.whoop.com/oauth/oauth2/token"'
-              + ' -H "Content-Type: application/x-www-form-urlencoded"'
-              + ' -d "grant_type=authorization_code'
-              + '&code=' + code
-              + '&redirect_uri=' + encodeURIComponent(REDIRECT_URI)
-              + '&client_id=' + CLIENT_ID
-              + '&client_secret=' + CLIENT_SECRET + '"';
-
-      document.getElementById('curl-command').textContent = cmd;
+      document.getElementById('auth-code').textContent = code;
       show('success-card');
     })();
   </script>
