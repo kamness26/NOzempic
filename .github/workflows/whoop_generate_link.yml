@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Generate WHOOP Auth Link
         env:
-          WHOOP_CLIENT_ID: ${{ secrets.WHOOP_CLIENT_ID }}
+          WHOOP_CLIENT_ID: ${{ vars.WHOOP_CLIENT_ID || secrets.WHOOP_CLIENT_ID }}
         run: |
           python3 - <<'EOF'
           import urllib.parse, os
@@ -20,9 +20,12 @@ jobs:
           scopes       = "offline read:profile read:recovery read:cycles read:sleep read:workout read:body_measurement"
 
           if not client_id:
-              print("❌  WHOOP_CLIENT_ID secret is not set.")
-              print("    Add it at: github.com/kamness26/NOzempic/settings/secrets/actions")
+              print("❌  WHOOP_CLIENT_ID is not set.")
+              print("    Add it as a Variable (not Secret) at:")
+              print("    github.com/kamness26/NOzempic/settings/variables/actions")
               exit(1)
+
+          print(f"  Using client_id: {client_id}")
 
           params = urllib.parse.urlencode({
               "response_type": "code",
