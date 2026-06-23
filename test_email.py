@@ -99,7 +99,8 @@ def run():
     from weekly_run import _build_email_html
     week_start = date.today() - timedelta(days=7)
     html = _build_email_html(recap_text, kam, score_data,
-                             config.get("week_number", 1), week_start)
+                             config.get("week_number", 1), week_start,
+                             activity=kam_activity)
 
     # ── 6. Send ───────────────────────────────────────────────────────────────
     kam_email = kam.get("email") or os.getenv("ADMIN_EMAIL", "")
