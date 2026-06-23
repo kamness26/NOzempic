@@ -1,13 +1,12 @@
 """
 engine/scoring.py
 ─────────────────
-Normalizes data from Oura, WHOOP, and Renpho into a single weekly
-score per participant, then ranks the group.
+Normalizes data from Oura and Renpho into a single weekly score.
 
 Scoring formula (configurable in config.json):
-    Body Sore Score  → 40%  (Renpho's own 0-100 composite)
-    Activity Score   → 30%  (Oura or WHOOP normalized composite)
-    Weekly Improvement→ 30% (body fat % delta + weight delta)
+    Body Sore Score   → 40%  (Renpho's own 0-100 composite)
+    Activity Score    → 30%  (Oura normalized composite)
+    Weekly Improvement→ 30%  (body fat % delta + weight delta)
 """
 
 import json
@@ -63,7 +62,7 @@ def score_improvement(
 
 def compute_weekly_score(
     participant_id:     str,
-    activity_data:      dict,        # output of oura.py or whoop.py
+    activity_data:      dict,        # output of oura.py
     renpho_current:     dict,        # output of renpho.py (this week)
     renpho_previous:    Optional[dict] = None,  # last week's renpho data
 ) -> dict:
@@ -86,7 +85,7 @@ def compute_weekly_score(
     # 1. Body Sore Score (direct from Renpho)
     body_sore = renpho_current.get("body_sore_score") or 50.0
 
-    # 2. Activity Score (composite from Oura or WHOOP)
+    # 2. Activity Score (composite from Oura)
     activity_score = (
         activity_data.get("weekly_averages", {}).get("composite_activity_score")
         or 50.0
@@ -132,27 +131,8 @@ def compute_weekly_score(
     }
 
 
-def rank_participants(scores: list[dict]) -> list[dict]:
-    """
-    Sort participants by weekly_score descending and add rank + delta from leader.
-
-    Returns the same list with added fields:
-        "rank": 1-based position
-        "gap_from_leader": points behind first place (0 for winner)
-    """
-    ranked = sorted(scores, key=lambda x: x["weekly_score"], reverse=True)
-    leader_score = ranked[0]["weekly_score"] if ranked else 0
-
-    for i, entry in enumerate(ranked):
-        entry["rank"]             = i + 1
-        entry["gap_from_leader"]  = round(leader_score - entry["weekly_score"], 1)
-        entry["is_winner"]        = (i == 0)
-
-    return ranked
-
 
 if __name__ == "__main__":
-    # Quick test with mock data
     import json
 
     mock_oura = {
@@ -162,19 +142,8 @@ if __name__ == "__main__":
             "hrv_avg_ms": 38, "composite_activity_score": 71,
         },
     }
-    mock_whoop = {
-        "device": "whoop",
-        "weekly_averages": {
-            "recovery_score": 84, "strain_normalized": 72,
-            "hrv_avg_ms": 52, "composite_activity_score": 79,
-        },
-    }
     mock_renpho_now  = {"body_sore_score": 69, "weight_lb": 256.2, "body_fat_pct": 32.3}
     mock_renpho_prev = {"body_sore_score": 68, "weight_lb": 258.0, "body_fat_pct": 32.5}
 
-    scores = [
-        compute_weekly_score("kam",    mock_oura,  mock_renpho_now, mock_renpho_prev),
-        compute_weekly_score("marcus", mock_whoop, mock_renpho_now, None),
-    ]
-    ranked = rank_participants(scores)
-    print(json.dumps(ranked, indent=2))
+    score = compute_weekly_score("kam", mock_oura, mock_renpho_now, mock_renpho_prev)
+    print(json.dumps(score, indent=2))
