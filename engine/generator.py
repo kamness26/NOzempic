@@ -72,27 +72,30 @@ Weekly scores:
 - Improvement Score: {score_data.get("improvement_score")}
 - WEEKLY TOTAL: {score_data.get("weekly_score")}
 
-Write ONLY the body text in this structure:
+The email already shows charts for all scores, steps, and HRV — do NOT describe those numbers in prose. The visual data is handled. Your job is the coaching layer on top.
 
-Hey {name} — here's your Week {week_num} picture.
+Write ONLY the following, with no extra text, headers, or formatting outside this structure:
 
-YOUR NUMBERS THIS WEEK
-[Key metrics listed cleanly — weight, BF%, visceral fat, metabolic age, BMR, muscle mass]
+WHAT_THE_DATA_SAYS
+[2-3 sentences MAX. Honest, specific analysis of the week — what the numbers actually mean for {name}'s goals. Reference visceral fat, recovery, or trend if relevant. No generic advice.]
 
-WHAT THE DATA SAYS
-[2-3 sentences of honest analysis — what's working, what isn't, what stands out]
+FOCUS_1
+[Headline: 4-6 words, punchy]
+[Body: 1-2 sentences. Specific, data-tied action. No fluff.]
 
-YOUR FOCUS THIS WEEK
-1. [Specific tip 1 — tied to data]
-2. [Specific tip 2 — tied to data]
-3. [Specific tip 3 — tied to data]
+FOCUS_2
+[Headline: 4-6 words, punchy]
+[Body: 1-2 sentences. Specific, data-tied action. No fluff.]
 
-💡 FACT OF THE WEEK
-[One fascinating health/performance fact directly tied to something in this week's data]
+FOCUS_3
+[Headline: 4-6 words, punchy]
+[Body: 1-2 sentences. Specific, data-tied action. No fluff.]
 
-[One closing sentence: honest trajectory assessment]
+FACT
+[One sentence. A genuinely interesting health fact tied directly to something in this week's data — HRV, visceral fat, sleep, steps. Not generic.]
 
-— Coach NOzempic"""
+CLOSING
+[One sentence. Honest trajectory read. Direct. No cheerleading.]"""
 
 
 def generate_weekly_recap(participant: dict, activity: dict, renpho_current: dict,
